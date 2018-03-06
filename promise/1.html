@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>初步认知</title>
+</head>
+<body>
+	<script>
+
+		/*
+		*		console.log(Promise)
+		*  首先打印一个Promise , 发现Promise身上有all、reject、resolve这几个眼熟的方法，原型上有then、catch等很眼熟的方法。
+		*  所以用Promise，new出来的对象，肯定会含有then，catch的方法
+		* */
+		
+        const p = new Promise(function (resolve, reject) {
+//		    做一些异步操作
+            setTimeout(function () {
+                console.log('执行完成');
+                resolve(console.log('解决了')); // 两秒后，输出‘执行完成’，并调用resolve方法
+            }, 2000)
+        })
+
+        /**
+         *  Promise的构造函数接收一个参数，是函数，并且传入两个参数：resolve，reject，分别表示异步操作执行成功后的回调函数和异步操作执行失败后的回调函数。
+         *  其实这里用“成功”和“失败”来描述并不准确，按照标准来讲，resolve是将Promise的状态置为fullfiled，reject是将Promise的状态置为rejected。不过在我们开始阶段可以先这么理解，后面再细究概念。
+         *  上面的代码只是new了一个对象，并没有调用它，可是传进去的函数就已经被执行了，这是需要注意的细节，所以我们使用promise一般包裹在一个函数里，下面改造一下
+         */
+
+        function runAsync() {
+            const p = new Promise(function (resolve, reject) {
+          // 做一些异步操作
+                setTimeout(function () {
+                    console.log('执行完成');
+                    resolve('resolve成功啦'); // 两秒后，输出‘执行完成’，并调用resolve方法
+                }, 2000)
+            })
+	        return p
+        }
+        
+        runAsync().then(function (data) {
+	        console.log(data)
+            // 后面可以用异步操作传过来的数据做些其他操作
+        })
+		/*
+		*  调用runAsync函数，return一个promise对象，直接调用then方法，then接收一个参数，是函数，并且会拿到我们在runAsync中调用resolve时传的的参数。运行这段代码，会在2秒后输出“执行完成”，紧接着输出“resolve成功啦”。
+		* */
+	</script>
+</body>
+</html>
