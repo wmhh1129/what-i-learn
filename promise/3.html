@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Promise中的reject</title>
+</head>
+<body>
+	<script>
+        /*
+		* 我们光用了resolve，还没用reject呢，它是做什么的呢？事实上，我们前面的例子都是只有“执行成功”的回调，
+		* 还没有“失败”的情况，reject的作用就是把Promise的状态置为rejected，这样我们在then中就能捕捉到，然后执行“失败”情况的回调。
+		* 看下面的代码。
+		* */
+        function getNumber() {
+            const p = new Promise(function (resolve, reject) {
+                //做一些异步操作
+                setTimeout(function () {
+                    var num = Math.ceil(Math.random() * 10); //生成1-10的随机数
+                    if (num <= 5) {
+                        resolve(num);
+                    }
+                    else {
+                        reject('数字太大了');
+                    }
+                }, 2000);
+            });
+            return p;
+        }
+
+        getNumber()
+            .then(
+                function (data) {
+                    console.log('resolved');
+                    console.log(data);
+                },
+                function (reason, data) {
+                    console.log('rejected');
+                    console.log(reason);
+                }
+            );
+        /*
+        *  认真阅读的你不难猜，结果可能有两种，一是输出 ‘resolved 随机数’；二是输出‘rejected 数字太大了’
+        *  then方法可以接受两个参数，第一个对应resolve的回调，第二个对应reject的回调。所以我们能够分别拿到他们传过来的数据。
+        * */
+
+
+        /* 下面我们来了解一下 catch的用法，改造一下上面代码 */
+        getNumber()
+            .then(function (data) {
+                console.log('resolved');
+                console.log(data);
+                console.log(somedata); //此处的somedata未定义
+            })
+            .catch(function (reason, data) {
+                console.log('rejected');
+                console.log(reason);
+            })
+        // 不难发现吧，catch和then的第二个参数一样，用来指定reject的回调
+        /*
+        *  这里会捕捉到somedata的未定义，并掉入catch方法中
+        * */
+
+	</script>
+
+</body>
+</html>
