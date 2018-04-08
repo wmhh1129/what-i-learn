@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+	<script>
+		/*
+		* 通过前面两个例子已经分别了解async和await，我们来作个虚假的例子，看一下等待问题。
+		* 这只是一个虚假的，实际项目中多是去后台请求数据，等数据回来后进行执行。
+		* */
+		function takeLongTime() {
+			return new Promise(resolve => {
+				setTimeout(() => resolve("long_time_value"), 1000);
+			});
+		}
+
+		async function test() {
+			const v = await takeLongTime();
+			console.log(v);
+		}
+
+		test();
+	</script>
+</body>
+</html>
