@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>PWA</title>
+</head>
+<body>
+	<script>
+		// index.js
+		// 首先在主线程的js里来注册service worker，这个过程将会通知浏览器我们的 Service Worker 线程的javaScript文件在什么地方呆着
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', function () {
+				// 在页面onLoad的时候注册位于sw.js的Service Worker
+				navigator.serviceWorker.register('/sw.js') //返回了一个promise
+					.then(function (registration) {
+
+						// 注册成功
+						console.log('ServiceWorker registration successful with scope: ', registration.scope);
+					})
+					.catch(function (err) {
+
+						// 注册失败:(
+						console.log('ServiceWorker registration failed: ', err);
+					});
+			});
+		}
+
+		// sw.js
+		const cacheName = 'pwaV1';
+
+		// 注册service worker线程后，用户首次访问页面时将会触发install事件
+		self.addEventListener('install', function (e) {
+			e.waitUntil(
+				// 需要通过 caches.open() 打开缓存并提供一个缓存名称。提供缓存名称可让我们对文件进行版本控制
+				caches.open(cacheName).then(cache => { //相当于开了一个叫'pwaV1'缓存库，存入文件, 这里文件大部分是供AppShell用的。
+					return cache.addAll([
+						'/index.js',
+						'/index.html',
+						'/styles/inline.css',
+						'/images/rain.png',
+						'/images/scattered-showers.png'
+					]);
+				})
+			);
+		});
+
+		// 当产生fetch请求时，fetch事件被调用
+		self.addEventListener('fetch', function (event) {
+			event.respondWith(
+				// fetch事件的event里面同样有一个特殊的属性，那就是request。和nodeJs里面的那个request类似，它代表了一个请求
+				caches.match(event.request) //caches.match() 会由内而外对触发抓取事件的网络请求进行评估，并检查以确认它是否位于缓存内,它随即使用已缓存版本作出响应
+					.then(function (response) { // 返回一个promise，response作为回调的参数
+						// 检测是否已经缓存过
+						if (response) { // 证明缓存中有请求对应的文件
+							return response;
+						}
+
+						// 或者利用 fetch 从网络获取一个副本。response 通过 e.respondWith() 传回至网页
+						const fetchRequest = event.request.clone(); //request类似stream，不能直接复用
+
+						return fetch(fetchRequest).then(
+							function (response) {
+								// 检测请求是否有效
+								if (!response || response.status !== 200) {
+									return response;
+								}
+
+								const responseToCache = response.clone();
+
+								caches.open('v1')
+									.then(function (cache) {
+										cache.put(event.request, responseToCache);
+									});
+
+								return response;
+							}
+						);
+					})
+			);
+		});
+
+	</script>
+</body>
+</html>
